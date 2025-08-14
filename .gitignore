@@ -1,0 +1,22 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.idea/
+.vscode/
+*.code-workspace
+
+# Vim/Emacs swaps and temp
+*~
+*.swp
+*.swo
+\#*\#
+.*.swp
+
+# Logs and archives
+*.log
+*.zip
+
+# Node/npm cache
+node_modules/
