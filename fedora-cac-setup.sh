@@ -15,6 +15,7 @@ set -euo pipefail
 # -------------------------------------------------------------------
 
 SCRIPT_VERSION="1.3"
+
 CERTS_URL="https://dl.dod.cyber.mil/wp-content/uploads/pki-pke/zip/unclass-certificates_pkcs7_v5-6_dod.zip"
 
 CAC_DIR="$HOME/.cac"
@@ -40,7 +41,7 @@ REQ_PKGS=(
   unzip
   openssl
   curl
-  pcsc-tools # useful for verification (pcsc_scan)
+  pcsc-tools
 )
 
 # --------------- Logging ---------------
@@ -173,7 +174,7 @@ install_dod_certs(){
 
   # Count existing DoD anchors before installing (rough estimate)
   local before_count
-  before_count="$(trust list | grep -iE 'DoD|Department of Defense' | wc -l || true)"
+  before_count="$(trust list | grep -iEc 'DoD|Department of Defense' || true)"
   log_d "Existing DoD-related trust entries before: $before_count"
 
   log_i "Splitting PEM into individual certs under $CERTS_DIR…"
@@ -196,7 +197,7 @@ install_dod_certs(){
   log_i "Processed ~$added certificate files."
 
   local after_count
-  after_count="$(trust list | grep -iE 'DoD|Department of Defense' | wc -l || true)"
+  after_count="$(trust list | grep -iEc 'DoD|Department of Defense' || true)"
   log_i "DoD-related trust entries now: $after_count (before: $before_count)"
   log_i "Verification sample:"
   run trust list | grep -iE 'DoD|Department of Defense' | head -n 20 || true
