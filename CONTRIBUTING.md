@@ -29,13 +29,13 @@ The goal is simple: **make CAC on Fedora “just work”** with clear logging an
 1. **Update** to the latest `main` version of the script.
 
 2. **Reproduce** with `LOG_LEVEL=DEBUG` for detailed logs:
-   
+
    ```bash
    LOG_LEVEL=DEBUG ./fedora-cac-setup.sh
-   ```
+   ```bash
 
 3. Collect environment details:
-   
+
    - Fedora release: `cat /etc/fedora-release`
    - Kernel: `uname -a`
    - DNF version: `dnf --version | head -n1`
@@ -67,36 +67,36 @@ Please include:
 ## Proposing a Change (PRs)
 
 1. **Fork** the repo and create a feature branch:
-   
+
    ```bash
    git checkout -b feat/short-description
-   ```
+   ```bash
 
 2. Keep the script:
-   
+
    - Bash with `set -euo pipefail`
    - Idempotent where practical
    - **Clear, leveled logging** (`INFO/WARN/ERROR/DEBUG`)
    - Fedora‑only assumptions; do not add rpm‑ostree handling here
 
 3. **Style & Quality**
-   
+
    - Run `shellcheck` locally and fix warnings where reasonable.
    - Avoid subshell-heavy constructs that obscure failures.
    - Keep functions small and explicit; log what you change.
 
 4. **Testing**
-   
+
    - Test on a fresh Fedora VM if possible.
    - Verify **re‑runs** don’t break (idempotence).
    - Validate logs are readable at both INFO and DEBUG levels.
 
 5. **Docs**
-   
+
    - Update `README.md` when behavior or flags change.
 
 6. **Commits**
-   
+
    - Use clear commit subjects (≤ 72 chars) and explanatory bodies when needed.
 
 ---
