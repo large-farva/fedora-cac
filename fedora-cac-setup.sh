@@ -45,18 +45,18 @@ REQ_PKGS=(
 )
 
 # --------------- Logging ---------------
-_ts(){ date +"%Y-%m-%d %H:%M:%S"; }
-log_i(){ echo "$(_ts) $LOG_PREFIX [INFO]  $*" ; }
-log_w(){ echo "$(_ts) $LOG_PREFIX [WARN]  $*" ; }
-log_e(){ echo "$(_ts) $LOG_PREFIX [ERROR] $*" ; }
-log_d(){ [[ $DEBUG_ENABLED -eq 1 ]] && echo "$(_ts) $LOG_PREFIX [DEBUG] $*"; }
+_ts() { date +"%Y-%m-%d %H:%M:%S"; }
+log_i() { echo "$(_ts) $LOG_PREFIX [INFO]  $*"; }
+log_w() { echo "$(_ts) $LOG_PREFIX [WARN]  $*"; }
+log_e() { echo "$(_ts) $LOG_PREFIX [ERROR] $*"; }
+log_d() { [[ $DEBUG_ENABLED -eq 1 ]] && echo "$(_ts) $LOG_PREFIX [DEBUG] $*"; }
 
 # Stream everything to logfile (stdout+stderr)
 mkdir -p "$CERTS_DIR" "$LOGS_DIR"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
 # Failure trap (prints failing line and last command)
-on_fail(){
+on_fail() {
   local exit_code=$?
   local line=${BASH_LINENO[0]:-?}
   log_e "Script failed (exit=$exit_code) near line $line."
@@ -67,11 +67,14 @@ on_fail(){
 trap on_fail ERR
 
 # --------------- Helpers ---------------
-need_cmd(){
-  command -v "$1" >/dev/null 2>&1 || { log_e "Missing required command: $1"; exit 1; }
+need_cmd() {
+  command -v "$1" > /dev/null 2>&1 || {
+    log_e "Missing required command: $1"
+    exit 1
+  }
 }
 
-run(){
+run() {
   # Run a command, log it, show exit code; does not stop on failure unless caller set -e
   log_d "\$ $*"
   if output="$("$@" 2>&1)"; then
@@ -86,7 +89,7 @@ run(){
   fi
 }
 
-run_req(){
+run_req() {
   # Same as run, but hard-fails the script on nonzero exit
   if ! run "$@"; then
     log_e "Required step failed. Aborting."
@@ -94,15 +97,15 @@ run_req(){
   fi
 }
 
-fedora_guard(){
-  if ! command -v dnf >/dev/null 2>&1 || [[ ! -f /etc/fedora-release ]]; then
+fedora_guard() {
+  if ! command -v dnf > /dev/null 2>&1 || [[ ! -f /etc/fedora-release ]]; then
     log_e "This script supports Fedora (dnf) only."
-    log_e "Detected: dnf=$(command -v dnf >/dev/null && echo yes || echo no), /etc/fedora-release=$( [[ -f /etc/fedora-release ]] && echo yes || echo no )"
+    log_e "Detected: dnf=$(command -v dnf > /dev/null && echo yes || echo no), /etc/fedora-release=$([[ -f /etc/fedora-release ]] && echo yes || echo no)"
     exit 1
   fi
 }
 
-preflight_summary(){
+preflight_summary() {
   log_i "DoD CAC setup starting (v$SCRIPT_VERSION)  LOG=$LOG_FILE"
   log_i "System summary:"
   run_req uname -a
@@ -111,11 +114,11 @@ preflight_summary(){
 
   log_i "Checking network reachability for the DoD PKI bundle URL…"
   # HEAD is not guaranteed; use a small download range to verify
-  if curl -fsI "$CERTS_URL" >/dev/null 2>&1; then
+  if curl -fsI "$CERTS_URL" > /dev/null 2>&1; then
     log_i "Network OK: reachable."
   else
     log_w "HEAD failed; trying a small ranged GET…"
-    if curl -fsSL --range 0-128 "$CERTS_URL" >/dev/null 2>&1; then
+    if curl -fsSL --range 0-128 "$CERTS_URL" > /dev/null 2>&1; then
       log_i "Network OK: ranged GET succeeded."
     else
       log_e "Cannot reach the certificate bundle URL. Check network/proxy and try again."
@@ -124,12 +127,12 @@ preflight_summary(){
   fi
 }
 
-pkg_install(){
+pkg_install() {
   log_i "Installing required packages via dnf…"
   # Show which are missing
   missing=()
   for p in "${REQ_PKGS[@]}"; do
-    if ! rpm -q "$p" >/dev/null 2>&1; then
+    if ! rpm -q "$p" > /dev/null 2>&1; then
       missing+=("$p")
     fi
   done
@@ -141,14 +144,14 @@ pkg_install(){
   run_req sudo dnf -y install "${missing[@]}"
 }
 
-enable_pcscd(){
+enable_pcscd() {
   log_i "Enabling and starting pcscd.socket…"
   run_req sudo systemctl enable --now pcscd.socket
   run_req systemctl is-active pcscd.socket
   run_req systemctl is-enabled pcscd.socket
 }
 
-install_dod_certs(){
+install_dod_certs() {
   log_i "Downloading DoD PKI bundle…"
   local zip="$CERTS_DIR/dod_${RUN_STAMP}.zip"
   run_req curl -fsSL "$CERTS_URL" -o "$zip"
@@ -170,7 +173,10 @@ install_dod_certs(){
   if ! run openssl pkcs7 -inform DER -print_certs -in "$p7b" -out "$pem"; then
     run_req openssl pkcs7 -print_certs -in "$p7b" -out "$pem"
   fi
-  [[ -s "$pem" ]] || { log_e "PEM conversion failed (empty file)."; exit 1; }
+  [[ -s "$pem" ]] || {
+    log_e "PEM conversion failed (empty file)."
+    exit 1
+  }
 
   # Count existing DoD anchors before installing (rough estimate)
   local before_count
@@ -203,7 +209,7 @@ install_dod_certs(){
   run trust list | grep -iE 'DoD|Department of Defense' | head -n 20 || true
 }
 
-nss_add_opensc_module_if_missing(){
+nss_add_opensc_module_if_missing() {
   local dbdir="$1"
   local label="OpenSC PKCS#11"
   local lib="/usr/lib64/pkcs11/opensc-pkcs11.so"
@@ -214,7 +220,7 @@ nss_add_opensc_module_if_missing(){
   fi
   need_cmd modutil
 
-  if modutil -dbdir "$dbdir" -list 2>/dev/null | grep -q "$label"; then
+  if modutil -dbdir "$dbdir" -list 2> /dev/null | grep -q "$label"; then
     log_i "NSS: module already present in $dbdir"
   else
     log_i "NSS: adding OpenSC module to $dbdir"
@@ -222,7 +228,7 @@ nss_add_opensc_module_if_missing(){
   fi
 }
 
-configure_legacy_nss_modules(){
+configure_legacy_nss_modules() {
   log_i "(optional) Registering OpenSC in user NSS DBs…"
 
   # Chromium/Chrome
@@ -236,13 +242,13 @@ configure_legacy_nss_modules(){
     while IFS= read -r -d '' prof; do
       local db="sql:$prof"
       nss_add_opensc_module_if_missing "$db"
-    done < <(find "$ff_dir" -maxdepth 1 -type d -name "*.default*" -print0 2>/dev/null)
+    done < <(find "$ff_dir" -maxdepth 1 -type d -name "*.default*" -print0 2> /dev/null)
   else
     log_w "Firefox profile directory not found; skipping."
   fi
 }
 
-post_diagnostics(){
+post_diagnostics() {
   log_i "---- Diagnostics ----"
   # pcscd status
   run systemctl status pcscd.socket --no-pager
@@ -256,7 +262,7 @@ post_diagnostics(){
   fi
 
   # Quick reader/card probe (timeout to avoid hanging logs)
-  if command -v timeout >/dev/null 2>&1 && command -v pcsc_scan >/dev/null 2>&1; then
+  if command -v timeout > /dev/null 2>&1 && command -v pcsc_scan > /dev/null 2>&1; then
     log_i "Capturing brief pcsc_scan sample (3s)…"
     run timeout 3s pcsc_scan || true
   else
@@ -264,7 +270,7 @@ post_diagnostics(){
   fi
 }
 
-final_notes(){
+final_notes() {
   echo
   log_i "------------------------------------------------------------------"
   log_i "Setup complete (v$SCRIPT_VERSION)."
