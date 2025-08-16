@@ -6,19 +6,11 @@ labels: bug
 assignees: ""
 ---
 
-
-
 ## Summary
-
-
 
 A clear and concise description of the problem.
 
-
-
 ## Environment
-
-
 
 - Fedora: `cat /etc/fedora-release`
 - Kernel: `uname -a`
@@ -26,45 +18,25 @@ A clear and concise description of the problem.
 - Browser & packaging: (Firefox/Chromium, RPM or Flatpak) + version
 - CAC reader model:
 
-
-
 ## Steps to Reproduce
-
-
 
 1. 
 2. 
 3. 
 
-
-
 ## Expected Behavior
-
-
 
 What you expected to happen.
 
-## 
-
 ## Actual Behavior
-
-
 
 What actually happened, including any error messages.
 
-
-
 ## Logs
-
-
 
 Attach the **single per‑run log** from `~/.cac/logs/…` (redact anything sensitive).
 
- 
-
 ## Diagnostics (copy/paste outputs if available)
-
-
 
 ```
 systemctl status pcscd.socket
