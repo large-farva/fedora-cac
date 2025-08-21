@@ -34,7 +34,6 @@ This project provides a one-shot script that:
 
 ## Quick Start
 
-```bash
 # 1) Clone and enter the repo
 git clone https://github.com/<your-username>/fedora-cac.git
 cd fedora-cac
@@ -47,7 +46,6 @@ chmod +x fedora-cac-setup.sh
 
 #    (Optional) Run with more verbose logs:
 LOG_LEVEL=DEBUG ./fedora-cac-setup.sh
-```bash
 
 After it completes, artifacts live in `~/.cac/` and a full per-run log is at `~/.cac/logs/…`.
 
@@ -107,13 +105,11 @@ After it completes, artifacts live in `~/.cac/` and a full per-run log is at `~/
 │       ...
 └── logs/
     └── fedora-cac-setup_YYYY-MM-DD_HH-MM-SS.log
-```bash
-
+```
 ---
 
 ## Usage
 
-```bash
 # Clone, chmod, run
 git clone https://github.com/<your-username>/fedora-cac.git
 cd fedora-cac
@@ -122,7 +118,6 @@ chmod +x fedora-cac-setup.sh
 
 # Optional: more verbose logs
 LOG_LEVEL=DEBUG ./fedora-cac-setup.sh
-```bash
 
 **After running:** Re-plug your reader if needed and test with your target site.
 
@@ -147,19 +142,16 @@ LOG_LEVEL=DEBUG ./fedora-cac-setup.sh
 
    ```bash
    pcsc_scan   # Ctrl+C to stop after it shows your reader/card
-   ```bash
 
 2. **Service status**
 
    ```bash
    systemctl status pcscd.socket
-   ```bash
 
 3. **Trust store (sample)**
 
    ```bash
    trust list | grep -iE 'DoD|Department of Defense'
-   ```bash
 
 4. **Firefox (only if manual step is needed)**
 
@@ -192,7 +184,6 @@ LOG_LEVEL=DEBUG ./fedora-cac-setup.sh
 
     ```bash
     trust list | grep -iE 'DoD|Department of Defense'
-    ```bash
 
 - **Firefox still doesn’t see the card**
 
@@ -223,10 +214,11 @@ To remove the DoD trust anchors added by this script:
 ```bash
 # Remove the anchors using the exact cert files we installed
 sudo trust anchor --remove ~/.cac/certs/cert-*.pem || true
-
+```
+```bash
 # (Optional) Update the consolidated trust store
 sudo update-ca-trust || true
-```bash
+```
 
 > Notes:
 >
@@ -237,13 +229,13 @@ To disable smart-card services:
 
 ```bash
 sudo systemctl disable --now pcscd.socket
-```bash
+```
 
 Packages can be removed with:
 
 ```bash
 sudo dnf remove pcsc-lite pcsc-lite-ccid opensc p11-kit p11-kit-trust p11-kit-tools nss-tools pcsc-tools
-```bash
+```
 
 ---
 
